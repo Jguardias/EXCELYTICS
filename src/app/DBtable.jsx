@@ -10,9 +10,12 @@ import { Toast } from "primereact/toast";
 import { FilterMatchMode } from "primereact/api";
 import { Button } from "primereact/button";
 //ENDPOINTS APIREST
-import { getData } from "../api/api.js";
+import { deleteData, deleteDataID, getData } from "../api/api.js";
 import { MdDeleteForever } from "react-icons/md";
 import "../App.css";
+import { generateReport } from "../utils/generateReport.js";
+import { mathColum } from "../utils/mathColum.js";
+import { mathObjest } from "../utils/mathObjets.js";
 
 function DBtable() {
   const [data, setData] = useState([]);
@@ -44,14 +47,34 @@ function DBtable() {
 
   const confirm2 = () => {
     confirmDialog({
+      message: "Do you want to delete this tablet?",
+      header: "Delete Confirmation",
+      icon: "pi pi-info-circle",
+      defaultFocus: "reject",
+      acceptClassName: "p-button-danger",
+      accept: () => {
+        deleteData().then(() => {
+          setData([]);
+          accept();
+        });
+      },
+      reject,
+    });
+  };
+  const confirm1 = (id) => {
+    confirmDialog({
       message: "Do you want to delete this record?",
       header: "Delete Confirmation",
       icon: "pi pi-info-circle",
       defaultFocus: "reject",
       acceptClassName: "p-button-danger",
       accept: () => {
-        setData([]);
-        accept();
+        deleteDataID(id).then(() => {
+          getData().then((data) => {
+            setData(data);
+            accept();
+          });
+        });
       },
       reject,
     });
@@ -102,6 +125,26 @@ function DBtable() {
             confirm2();
           }}
         />
+        <Button
+          label="General report"
+          severity="info"
+          onClick={() => {
+            const summary = {
+              summary: {
+                  totalPedidos: data.length,
+                  totalUnidades: mathColum(data,"Unidades"),
+                  importeVentas: mathColum(data,"ImporteVentaTotal"),
+                  importeCostes: mathColum(data,"ImporteCosteTotal"),
+                  beneficioTotal: (mathColum(data,"ImporteVentaTotal") -  mathColum(data,"ImporteCosteTotal"))
+              },
+              zoneDetails: mathObjest(data,"Zona"),
+              contriesDetais: mathObjest(data,"Pais"),
+              productDetails: mathObjest(data,"TipoDeProducto")
+          };
+          
+            generateReport(summary);
+          }}
+        />
       </div>
     );
   };
@@ -138,12 +181,13 @@ function DBtable() {
         <Column field="CosteUnitario" header="Coste unitario"></Column>
         <Column field="ImporteVentaTotal" header="Importe venta total"></Column>
         <Column field="ImporteCosteTotal" header="Importe coste total"></Column>
-        <Column header="Opciones"
+        <Column
+          header="Opciones"
           body={(data) => (
-            <button 
+            <button
               className="btnDelete"
               onClick={() => {
-                setData(data.id);
+                confirm1(data.id);
               }}
             >
               <MdDeleteForever />

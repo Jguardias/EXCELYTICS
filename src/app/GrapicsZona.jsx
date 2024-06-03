@@ -35,8 +35,6 @@ function GraphicsZona() {
     });
   }, [selectedCity]);
 
-  console.log(cities);
-  console.log(selectedCity);
   return (
     <div
       style={{

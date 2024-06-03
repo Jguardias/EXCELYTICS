@@ -1,17 +1,11 @@
 import { Chart } from "primereact/chart";
-import { getData } from "../../api/api";
-import { includeArray } from "../../utils/includeArray";
 import { useEffect, useState } from "react";
 import { calculateIncome } from "../../utils/calculateIncome";
+import { includeArray } from "../../utils/includeArray";
 function GraphicsBasic({data,condicion}) {
   const [chartData, setChartData] = useState({});
   const [chartOptions, setChartOptions] = useState({});
-  // const [datas, setData] = useState( []);
 
-  // // Actualizar `datas` cuando `data` cambia
-  // useEffect(() => {
-  //     if(data.length > 0) setData(data);
-  // }, [data]);
 
   useEffect(() => {
     if (data.length > 0) {

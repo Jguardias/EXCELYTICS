@@ -183,7 +183,6 @@ function TableMain() {
       setData(data);
       setVisible(false);
       accept(message);
-      console.log(data);
       input.value = "";
     } else {
       console.error("No se seleccionaron archivos");

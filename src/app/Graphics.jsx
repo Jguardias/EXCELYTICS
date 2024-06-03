@@ -1,14 +1,12 @@
 import { Card } from "primereact/card";
 import GraphicsBasic from "./Graphics/GraphicsBasic";
-
-import GraphicsPie from "./Graphics/GraphicsPie";
-import { FaRegUser } from "react-icons/fa";
-import { TbReportMoney } from "react-icons/tb";
-import { IoLocationOutline } from "react-icons/io5";
-import { LiaCoinsSolid } from "react-icons/lia";
-import { getData } from "../api/api";
 import { useEffect, useState } from "react";
+import { FaRegUser } from "react-icons/fa";
+import { IoLocationOutline } from "react-icons/io5";
+import { TbReportMoney } from "react-icons/tb";
+import { getData } from "../api/api";
 import { includeArray } from "../utils/includeArray";
+import GraphicsPie from "./Graphics/GraphicsPie";
 
 
 function Graphics() {
