@@ -5,6 +5,7 @@ import { Avatar } from "primereact/avatar";
 //icons form ReactIcons
 import { GoGraph } from "react-icons/go";
 import { RiMedalFill } from "react-icons/ri";
+import { CiViewTable } from "react-icons/ci";
 //styles for sliderBar
 import "../App.css";
 
@@ -23,9 +24,17 @@ function SideBar() {
         <RiMedalFill />
         <p>Overview</p>
       </Link>
+      <Link className="sideBar__item" to="/DBdataTable">
+      <CiViewTable />
+        <p>DB data table</p>
+      </Link>
       <Link className="sideBar__item" to="/Graphics">
         <GoGraph />
-        <p>Graphics</p>
+        <p>Graphics Zones</p>
+      </Link>
+      <Link className="sideBar__item" to="/GraphicsZona">
+        <GoGraph />
+        <p>Graphics Countries</p>
       </Link>
       {/* <div style={{ background: "white", width:"100%",padding:"5px",display:"flex", alignItems:"center", justifyContent:"center", borderRadius: "5px"}} >
         <img

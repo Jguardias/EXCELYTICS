@@ -1,6 +1,4 @@
-//xlsx
-import { read, utils } from "xlsx";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 //prime react
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
@@ -11,52 +9,36 @@ import { ConfirmDialog, confirmDialog } from "primereact/confirmdialog";
 import { Toast } from "primereact/toast";
 import { FilterMatchMode } from "primereact/api";
 import { Button } from "primereact/button";
-import { Dialog } from "primereact/dialog";
-//helpers
-import dateConversion from "../utils/dateConversion.js";
-import numberConversion from "../utils/numberConversion.js";
 //ENDPOINTS APIREST
+import { getData } from "../api/api.js";
+import { MdDeleteForever } from "react-icons/md";
+import "../App.css";
 
-import { createData } from "../api/api.js";
-import { checkFile } from "../utils/checkFiel.js";
-
-function TableMain() {
+function DBtable() {
   const [data, setData] = useState([]);
-  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    getData().then((data) => {
+      setData(data);
+    });
+  }, []);
   const toast = useRef(null);
 
-  const accept = (message) => {
+  const accept = () => {
     toast.current.show({
       severity: "info",
       summary: "Confirmed",
-      detail: message,
+      detail: "You have accepted",
       life: 3000,
     });
   };
 
-  const reject = (message) => {
+  const reject = () => {
     toast.current.show({
       severity: "warn",
       summary: "Rejected",
-      detail: message,
+      detail: "You have rejected",
       life: 3000,
-    });
-  };
-
-  const confirm1 = () => {
-    confirmDialog({
-      message: "Are you sure you want to proceed?",
-      header: "Confirmation",
-      icon: "pi pi-exclamation-triangle",
-      defaultFocus: "accept",
-      accept: () => {
-        createData(data).then(() => {
-          accept("successful action");
-        });
-      },
-      reject: ()=>{
-        reject("  Action denied")
-      },
     });
   };
 
@@ -69,11 +51,9 @@ function TableMain() {
       acceptClassName: "p-button-danger",
       accept: () => {
         setData([]);
-        accept("file deleted from cache");
+        accept();
       },
-            reject: ()=>{
-        reject("  Action denied")
-      },
+      reject,
     });
   };
   const [globalFilterValue, setGlobalFilterValue] = useState("");
@@ -116,25 +96,10 @@ function TableMain() {
         </IconField>
 
         <Button
-          label="Import .xlsx .xls"
-          style={{backgroundColor:"#07b7d4" , borderColor:"#07b7d4"}}
-          onClick={() => {
-            setVisible((state) => !state);
-          }}
-        />
-
-        <Button
-          label="Delete data"
+          label="Delete table"
           severity="danger"
           onClick={() => {
             confirm2();
-          }}
-        />
-
-        <Button
-          label="Save data"
-          onClick={() => {
-            confirm1();
           }}
         />
       </div>
@@ -143,91 +108,14 @@ function TableMain() {
 
   const header = renderHeader();
 
-  async function handleXlsxUpload(e) {
-    const input = e.target;
-    const files = input.files;
-    const firstFile = files[0];
-
-    if (e.target.files) {
-      /* Download from https://docs.sheetjs.com/pres.numbers */
-      const f = firstFile;
-      const ab = await f.arrayBuffer();
-      /* parse */
-      const wb = read(ab);
-      /* generate array of objects from first worksheet */
-      const ws = wb.Sheets[wb.SheetNames[0]]; // get the first worksheet
-
-      const data = utils.sheet_to_json(ws); // generate objects
-     
-      // if(data.length > 0) {
-      //   console.log("empty")
-      //   return;
-      // } 
-      const [check,message] = checkFile(data);
-      
-      if(!check) {
-        reject(message);
-        return;
-      }
-      //new procces
-      data.forEach((obj) => {
-        if (obj && obj["FechaPedido"] !== undefined) {
-          obj["FechaPedido"] = dateConversion(obj["FechaPedido"]);
-          obj["FechaEnvio"] = dateConversion(obj["FechaEnvio"]);
-          obj["ImporteCosteTotal"] = numberConversion(obj["ImporteCosteTotal"]);
-          obj["ImporteVentaTotal"] = numberConversion(obj["ImporteVentaTotal"]);
-        }
-      });
-
-      /* update state */
-      setData(data);
-      setVisible(false);
-      accept(message);
-      console.log(data);
-      input.value = "";
-    } else {
-      console.error("No se seleccionaron archivos");
-    }
-  }
-
   return (
     <div style={{ padding: "0px" }}>
       <Toast ref={toast} />
       <ConfirmDialog />
-      <Dialog
-        header="Select document (.xlsx .xls)"
-        visible={visible}
-        style={{ width: "20vw"}}
-        onHide={() => {
-          if (!visible) return;
-          setVisible(false);
-        }}
-      >
-        
-          <div className="bodymodal" >
-          <button className="modalDownloadFile">
-            <a href="/Referencefile.xls">
-            <img src="/excel.svg" alt="" />
-            Download reference file
-            </a>
-          </button>
-          <input  className="modalInput"
-            onChange={handleXlsxUpload}
-            type="file"
-            name="files"
-            accept=".xlsx, .xls"
-            id="files"
-          />
-          <label className="modalInput__label"htmlFor="files">Import .xlsx .xls</label>
-
-          </div>
-
-       
-      </Dialog>
       <DataTable
         value={data}
         filters={filters}
-        globalFilterFields={["ID Cliente", "Zona"]}
+        globalFilterFields={["ID Cliente", "Zona", "Pais"]}
         header={header}
         scrollable
         style={{ minWidth: "50rem" }}
@@ -250,9 +138,23 @@ function TableMain() {
         <Column field="CosteUnitario" header="Coste unitario"></Column>
         <Column field="ImporteVentaTotal" header="Importe venta total"></Column>
         <Column field="ImporteCosteTotal" header="Importe coste total"></Column>
+        <Column header="Opciones"
+          body={(data) => (
+            <button 
+              className="btnDelete"
+              onClick={() => {
+                setData(data.id);
+              }}
+            >
+              <MdDeleteForever />
+            </button>
+          )}
+        >
+          {" "}
+        </Column>
       </DataTable>
     </div>
   );
 }
 
-export default TableMain;
+export default DBtable;
